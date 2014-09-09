@@ -1,0 +1,51 @@
+
+: ${DEBUG:=1}
+: ${TWITTER_TOKEN_FILE=~/.twittertk}
+
+debug() {
+  [ ${DEBUG} -gt 0 ] && echo [DEBUG] "$@" 1>&2
+}
+
+tw-reload() {
+  source ${BASH_SOURCE[0]}
+}
+alias r=tw-reload
+
+tw-get-token() {
+  TWITTER_TOKEN=$(cat $TWITTER_TOKEN_FILE)
+}
+
+tw-get-new-token() {
+  : ${TWITTER_API_KEY:? required}
+  : ${TWITTER_API_SECRET:? required}
+  RESP=$(curl -s \
+    -u "${TWITTER_API_KEY}:${TWITTER_API_SECRET}" \
+    https://api.twitter.com/oauth2/token \
+    -d grant_type=client_credentials
+  )
+  debug RESP: $RESP
+  TWITTER_TOKEN=$(echo $RESP|jq .access_token -r)
+  echo ${TWITTER_TOKEN}> ${TWITTER_TOKEN_FILE}
+}
+
+tw-rate-limits() {
+  RESP=$(curl -s \
+    -H "Authorization: Bearer  $TWITTER_TOKEN"  \
+    "https://api.twitter.com/1.1/application/rate_limit_status.json"
+  )
+  echo $RESP|jq '{friendlist: .resources.friends["/friends/following/list"].remaining, ratestatus: .resources.application["/application/rate_limit_status"].remaining}'
+}
+
+tw-follower-count() {
+  SCREEN_NAME=$1
+  : ${SCREEN_NAME:? required}
+
+  RESP=$(curl -s -G \
+    -H "Authorization: Bearer  $TWITTER_TOKEN"  \
+    https://api.twitter.com/1.1/followers/list.json \
+    -d cursor=-1 \
+    -d screen_name=${SCREEN_NAME} \
+    -d count=5000
+  )
+  echo $RESP|jq ".users|length"
+}
