@@ -4,6 +4,7 @@ curl -Lo /tmp/twitter-functions j.mp/twitter-functions && . /tmp/twitter-functio
 ###################################################
 INSTALL
 
+VERSION=0.2
 : ${DEBUG:=1}
 : ${TWITTER_TOKEN_FILE=~/.twittertk}
 
@@ -22,6 +23,10 @@ tw-upgrade-script() {
 
 tw-get-token() {
   TWITTER_TOKEN=$(cat $TWITTER_TOKEN_FILE)
+}
+
+tw-version() {
+  echo version: ${VERSION}
 }
 
 tw-get-new-token() {
