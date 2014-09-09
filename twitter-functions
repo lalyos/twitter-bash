@@ -16,6 +16,10 @@ tw-reload() {
 }
 alias r=tw-reload
 
+tw-upgrade-script() {
+  curl -Lo ${BASH_SOURCE[0]} j.mp/twitter-functions && source ${BASH_SOURCE[0]}
+}
+
 tw-get-token() {
   TWITTER_TOKEN=$(cat $TWITTER_TOKEN_FILE)
 }
